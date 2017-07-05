@@ -17,7 +17,7 @@ public class JavaTruco {
     public static void main(String[] args) {
         Jogo jogo = new Jogo(2);
         jogo.addJogador(new J_Humano());
-        jogo.addJogador(new J_Humano());
+        jogo.addJogador(new J_IA1());
         jogo.iniciar();
         
     }

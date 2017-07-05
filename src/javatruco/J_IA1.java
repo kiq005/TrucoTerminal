@@ -5,11 +5,15 @@
  */
 package javatruco;
 
+import static java.lang.Math.random;
+
 /**
  *
  * @author kaique
  */
 public class J_IA1 extends Jogador{
+    
+    
     
     public J_IA1(){
         super();
@@ -17,6 +21,14 @@ public class J_IA1 extends Jogador{
 
     @Override
     public Carta obterCarta() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(cartas<1)
+            return null;
+        int selecao = (int) random()*(this.cartas-1);
+        Carta carta = this.mao[selecao];
+        this.mao[selecao]=null;
+        this.cartas--;
+        this.organizaMao();
+        System.out.println("IA jogou carta: " + carta.Desenho());
+        return carta;
     }
 }

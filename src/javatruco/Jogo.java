@@ -87,7 +87,7 @@ public class Jogo {
                 mesa.limpar();
                 if(maior<0){
                     // Empate
-                    System.out.println("Empate!");
+                    System.out.println("Empate!\n");
                     if(turno>1 && mesa.getPartida()!=0)
                         break;
                     continue;
@@ -100,6 +100,7 @@ public class Jogo {
                     // Adversários marcam
                     mesa.add(2);
                 }
+                System.out.println("");
                 if(Math.abs(mesa.getPartida())>1)
                     break;
                 // Quem ganha, joga primeiro
@@ -108,6 +109,10 @@ public class Jogo {
             // Depois de jogarem todas as cartas
             // Verifica qual time ganhou a rodada
             mesa.finalizaRodada();
+            // Esvazia mão dos jogadores
+            for(int i=0; i<emJogo; i++){
+                jogadores[i].esvaziarMao();
+            }
         }
     }
 }

@@ -23,6 +23,10 @@ public abstract class Jogador implements PuxaCarta{
         this.cartas++;
     }
     
+    public void esvaziarMao(){
+        this.cartas = 0;
+    }
+    
     protected void organizaMao(){
         if(this.mao[0]==null){
             if(this.mao[2]!=null){
