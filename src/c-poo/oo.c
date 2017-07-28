@@ -1,51 +1,79 @@
 #include "oo.h"
 
 /* Definição das funções */
-function(public, tar, 
-	puts("tar");
-	puts("tartar");
+function(public, getName,
+	//printf("Type: %s\n", (char*)this.attributes[0]->_type);
+	//printf("Nome: %s\n", (char*)this.attributes[0]->_value);
+	return get(nome);
 	);
-function(private, bar, 
-	puts("bar");
+function(public, setName, 
+	char* name = va_arg(args, char*);
+	set(nome, name);
 	);
-function(public, foo, 
-	puts("foo");
+function(public, setIdade, 
+	int i = va_arg(args, int);
+	set(idade, i);
 	);
-function(public, sim,
-	puts("sim");
+function(public, getIdade,
+	return get(idade);
 	);
-function(public, RA,
-	puts("00112233");
-	);
+
+/* Definição de atributos */
+var(public, char[64], nome);
+var(public, int, idade);
 /* Definição das classes */
-class(Pessoa, {&foo, &bar, &tar});
-extends(Aluno, Pessoa, {&RA});
-extends(Professor, Pessoa, {&sim});
+class(Pessoa, {&getName, &setName}, {&nome});
+extends(Aluno, Pessoa, {&setIdade, &getIdade}, {&nome, &idade});
+extends(Professor, Pessoa, {});
 
 int main(void){
 	// Instaciações
+	puts(">> Criando instâncias");
 	instanciate(fulano, Pessoa);
-	instanciate(aluno, Aluno);
+	instanciate(aluno1, Aluno);
+	instanciate(aluno2, Aluno);
+	instanciate(aluno3, Aluno);
 	instanciate(prof, Professor)
 	// Teste de Chamada de funções
-	call(fulano, foo);
-	call(fulano, bar);
-	call(fulano, tar);
-	call(fulano, sim);
-	call(fulano, RA);
+	//puts(">> Chamando funções em fulano");
+	//printf("Nome: %s\n", (char*)call(fulano, getName));
+	//call(fulano, setName, "João");
+	//call(fulano, setIdade, 32);
+	//printf("Nome: %s\n", (char*)call(fulano, getName));
+	//printf("Idade: %d\n", (int)call(fulano, getIdade));
+	call(aluno1, setName, "Ana");
+	call(aluno1, setIdade, 18);
+	printf("Nome: %s\n", (char*)call(aluno1, getName));
+	printf("Idade: %d\n", (int)call(aluno1, getIdade));
+/*
 	puts("---");
-	call(aluno, foo);
-	call(aluno, bar);
-	call(aluno, tar);
-	call(aluno, sim);
-	call(aluno, RA);
-	puts("---");
-	call(prof, foo);
-	call(prof, bar);
-	call(prof, tar);
-	call(prof, sim);
-	call(prof, RA);
-	puts("---");
+	puts(">> Definindo alunos");
+	call(aluno1, setName, "Ana");
+	call(aluno2, setName, "Bia");
+	call(aluno3, setName, "Carol");
+	call(aluno1, setIdade, 18);
+	call(aluno2, setIdade, 19);
+	call(aluno3, setIdade, 20);
+	puts(">> Obtendo nomes dos alunos");
+	
+	printf("Nome: %s\n", (char*)call(aluno1, getName));
+	printf("Idade: %d\n", (int)call(aluno1, getIdade));
+	printf("Nome: %s\n", (char*)call(aluno2, getName));
+	printf("Idade: %d\n", (int)call(aluno2, getIdade));
+	printf("Nome: %s\n", (char*)call(aluno3, getName));
+	printf("Idade: %d\n", (int)call(aluno3, getIdade));
+	printf("Nome: %s\n", (char*)call(fulano, getName));
+	printf("Idade: %d\n", (int)call(fulano, getIdade));
+
+	puts(">> Redefinindo nomes dos alunos");
+	call(aluno1, setName, "Ana Lee");
+	call(aluno3, setName, "Carol Chun");
+	puts(">> Obtendo nomes dos alunos");
+	printf("Nome: %s\n", (char*)call(aluno1, getName));
+	printf("Nome: %s\n", (char*)call(aluno2, getName));
+	printf("Nome: %s\n", (char*)call(aluno3, getName));
+	printf("Nome: %s\n", (char*)call(fulano, getName));
+*/
 
 	return 1;
 }
