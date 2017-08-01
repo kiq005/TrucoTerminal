@@ -11,8 +11,8 @@ function(public, setName,
 	set(nome, name);
 	);
 function(public, setIdade, 
-	int i = va_arg(args, int);
-	set(idade, i);
+	int idade = va_arg(args, int);
+	set(idade, (generic)(intptr_t)idade);
 	);
 function(public, getIdade,
 	return get(idade);
@@ -23,8 +23,8 @@ var(public, char[64], nome);
 var(public, int, idade);
 /* Definição das classes */
 class(Pessoa, {&getName, &setName}, {&nome});
-extends(Aluno, Pessoa, {&setIdade, &getIdade}, {&nome, &idade});
-extends(Professor, Pessoa, {});
+extends(Aluno, Pessoa, {&setIdade, &getIdade}, {&idade});
+extends(Professor, Pessoa);
 
 int main(void){
 	// Instaciações
@@ -33,7 +33,7 @@ int main(void){
 	instanciate(aluno1, Aluno);
 	instanciate(aluno2, Aluno);
 	instanciate(aluno3, Aluno);
-	instanciate(prof, Professor)
+	instanciate(prof, Professor);
 	// Teste de Chamada de funções
 	//puts(">> Chamando funções em fulano");
 	//printf("Nome: %s\n", (char*)call(fulano, getName));
@@ -41,10 +41,15 @@ int main(void){
 	//call(fulano, setIdade, 32);
 	//printf("Nome: %s\n", (char*)call(fulano, getName));
 	//printf("Idade: %d\n", (int)call(fulano, getIdade));
+	call(fulano, setName, "Josevaldo");
+	call(fulano, setIdade, 34);
+	printf("Nome: %s\n", (char*)call(fulano, getName));
+	printf("Idade: %d\n", (int)(intptr_t)call(fulano, getIdade));
+
 	call(aluno1, setName, "Ana");
 	call(aluno1, setIdade, 18);
 	printf("Nome: %s\n", (char*)call(aluno1, getName));
-	printf("Idade: %d\n", (int)call(aluno1, getIdade));
+	printf("Idade: %d\n", (int)(intptr_t)call(aluno1, getIdade));
 /*
 	puts("---");
 	puts(">> Definindo alunos");

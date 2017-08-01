@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include <stdint.h>
+
 #define MAX_MET 256
 #define MAX_LEN 64
 #define generic void*
@@ -12,10 +14,11 @@ typedef struct Class Class;
 typedef struct Attribute Attribute;
 typedef struct Method Method;
 typedef struct Object Object;
+int __get_attribute_index__(Object this, char* att_name);
 generic __realize_call__(Object _obj_, char* func, ...);
 generic __find_method_on_object__(Object _obj_, char* func, va_list args);
 
-static int __i__;
+static int __i__, __j__;
 static Object _scope_;
 
 #define class(name, ...) Class name = {NULL, #name, __VA_ARGS__}
@@ -25,13 +28,23 @@ static Object _scope_;
 	name->type = _type_;\
 	for(__i__=0;__i__<MAX_MET; __i__++){\
 		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
-		if(_type_._attributes[__i__]==NULL) continue; \
+		if(_type_._attributes[__i__]==NULL){\
+			if(_type_._super==NULL) continue;\
+			break;\
+		}\
 		name->attributes[__i__]->_visibility = _type_._attributes[__i__]->_visibility;\
 		strncpy(name->attributes[__i__]->_type, _type_._attributes[__i__]->_type, MAX_LEN);\
 		strncpy(name->attributes[__i__]->_name, _type_._attributes[__i__]->_name, MAX_LEN);\
 		name->attributes[__i__]->_value = NULL;\
+	}\
+	for(__j__=0;__i__<MAX_MET; __i__++, __j__++){\
+		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
+		if(_type_._super->_attributes[__j__]==NULL) continue; \
+		name->attributes[__i__]->_visibility = _type_._super->_attributes[__j__]->_visibility;\
+		strncpy(name->attributes[__i__]->_type, _type_._super->_attributes[__j__]->_type, MAX_LEN);\
+		strncpy(name->attributes[__i__]->_name, _type_._super->_attributes[__j__]->_name, MAX_LEN);\
+		name->attributes[__i__]->_value = NULL;\
 	}
-	
 #define function(visibility, name, cmd) \
 	generic _##name (Object this, va_list args){cmd}; Method name = {visibility, #name, &_##name}
 #define var(visibility, type, name) \
@@ -39,7 +52,9 @@ static Object _scope_;
 #define get(att_name)\
 	this.attributes[__get_attribute_index__(this, #att_name)]->_value;
 #define set(att_name, __value__)\
-	this.attributes[__get_attribute_index__(this, #att_name)]->_value = (generic)__value__;
+	this.attributes[__get_attribute_index__(this, #att_name)]->_value = __value__;
+
+
 
 struct Class{
 	Class *_super;
@@ -144,7 +159,7 @@ generic __find_method_on_object__(Object _obj_, char* func, va_list args){
 		return _ret;
 		//return (generic) __find_method_on_class__(*_obj_.type._super, func);
 	}
-	fprintf(stderr, "Erro: Não é possível chamar a função '%s' em '%s'.\n", func, _obj_.type._name);
+	fprintf(stderr, "Erro: A classe '%s' não possui a função '%s'.\n", _obj_.type._name, func);
 	return NULL;
 }
 
