@@ -5,6 +5,7 @@ Utilize o `build.sh` para contruir o jogo. Um arquivo `Truco.sh` será gerado, u
 (Atualmente, a versão construída é um modelo em Java, que servirá de base para a construção do modelo em C+OO)
 ## Programação OO via C
 Para simular OO via C, primeiramente inclua a biblioteca _oo.h_, utilizando: `#include "oo.c"`, a biblioteca já inclui _stdlib.h_, _stdio.h_, e _string.h_. Atualmente contamos com as seguintes funcionalidades:
+
 - **Definição de funções**
 
 Para implementar, utilize: `function(visibilidade, nome, comandos...);`, por exemplo:
@@ -14,6 +15,7 @@ function(public, foo,
 	);
 ```
 As funções não possuem um número determinado de argumentos, necessitando que o programador conheça a especificação da função. Um modo de definir argumentos é utilizar `tipo nome = va_arg(args, tipo)`, assim, a variável receberá o valor do primeiro argumento passado, pode-se repetir para quantas variáveis forem necessárias.
+
 - ** Definição de atributos **
 
 Assim como funções, os atributos de uma classe devem ser definidos primeiro. Atualmente, todos os atributos são tratados como `private`. Para implementar, utilize `var(visibilidade, tipo, nome)`, por exemplo:
@@ -22,6 +24,7 @@ var(public, char[64], nome);
 var(public, int, idade);
 ```
 Os atributos só podem ser acessados por funções internas a classe. Para isso, utilize os comandos `get(nome_do_atributo)` e `set(nome_do_atributo, novo_valor)`. Por tratarem sobre um tipo genérico (void\*), seu compilador pode enviar mensagens de _warning_, isto deve ser trabalhado em próximas atualizações. 
+
 - **Definição de classes**
 
 Para definir classes, utilize: `class(nome, lista_de_métodos);`, por exemplo:
@@ -37,6 +40,7 @@ extends(Aluno, Pessoa, {&Nota});
 - **Instânciação**
 
 Para criar uma instância de uma classe, utilize `instanciate(nome, classe);`, não é preciso ter inicializado a variável antes.
+
 - **Chamada de métodos**
 
 Para realizar chamadas de métodos em objetos, utilize `call(objeto, função);`, por exemplo:
@@ -44,7 +48,7 @@ Para realizar chamadas de métodos em objetos, utilize `call(objeto, função);`
 instanciate(fulano, Aluno);
 call(fulano, foo);
 ```
--** Exemplo completo **
+- ** Exemplo completo **
 
 Um simples exemplo de utilização da biblioteca `oo.h` pode ser:
 ```C
@@ -86,6 +90,8 @@ int main(void){
 ```
 
 ## Updates
+01-08-17: Classes filhas herdam diretamente atributos das classe pai. Foram reescritas algumas mentagens de erro.
+
 28-07-17: Agora classes possuem atributos, e funções podem modificar e retornar tais atributos. Os atributos só podem ser modificados por funções internas a classe. No momento, os atributos devem ser endereçados nas classes pais e filhas, o mesmo não é necessário para as funções, precisando ser endereçadas somente na classe pai. Você deve tomar cuidado com as nomenclaturas ao utilizar a função `get(nome, valor)`, porém ela deve ser trabalhada para evitar problemas. A próxima atualização deve vir correções aos problemas citados. Utilize o arquivo `oo.c` para ter um exemplo de uso, retire comentários para poder ver alguns exemplos e limitações de tratamento de erros.
 
 22-07-17: Adicionado primeira versão do arquivo ``oo.h``, possibilitando a implementação de classes, extensões(hierarquia de classes) e funções. As classes ainda não contém atributos! O escopo público e privado estão funcionando para controle de acesso a funções, ainda falta implementar o _protected_. Utilize o arquivo `oo.c` para ter um exemplo de uso das funcionalidades implementadas.
