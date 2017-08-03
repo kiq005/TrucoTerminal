@@ -27,19 +27,27 @@ Os atributos só podem ser acessados por funções internas a classe. Para isso,
 
 - **Definição de classes**
 
-Para definir classes, utilize: `class(nome, lista_de_métodos);`, por exemplo:
+Para definir classes, utilize: `class(nome, lista_de_métodos, lista_de_atributos);`, por exemplo:
 ```C
-class(Pessoa, {&foo, &bar});
+class(Pessoa, {&foo, &bar}, {&nome, &idade});
 ```
 - **Definição de classes extendidas**
 
-Para definir classes que herdam (filhas) de outras, use: `extends(nome, pai, lista_de_métodos);`, por exemplo:
+Para definir classes que herdam (filhas) de outras, use: `extends(nome, pai, lista_de_métodos, lista_de_atributos);`, por exemplo:
 ```C
-extends(Aluno, Pessoa, {&Nota});
+extends(Aluno, Pessoa, {&nota}, {&ano});
 ```
+- **Polimorfismo**
+
+Para redefinir uma função herdada de uma classe pai, utilize: `override(Classe, nome_do_método, comandos...)`, por exemplo:
+```C
+override(Aluno, getName, 
+	return get(nome);
+```
+
 - **Instânciação**
 
-Para criar uma instância de uma classe, utilize `instanciate(nome, classe);`, não é preciso ter inicializado a variável antes.
+Para criar uma instância de uma classe, utilize `instanciate(classe, nome);`, não é preciso ter inicializado a variável antes.
 
 - **Chamada de métodos**
 
@@ -77,7 +85,7 @@ extends(Studant, Person, {&getAge, &setAge}, {&name, &age});// A Classe Studant 
 /* Início da execução */
 int main(void){
 	/* Criando instâncias */
-    instanciate(studant1, Studant);
+    instanciate(Studant, studant1);
     /* Chamando funções */
     call(studant1, setName, "Ana");// A classe Studant herda de Person a função setName
     call(studant1, setAge, 18);
@@ -90,6 +98,8 @@ int main(void){
 ```
 
 ## Updates
+03-08-17: Implementado polimorfismo de funções (_override_), apagado a função `__find_method_on_class__`, invertida a ordem de instanciação para `instanciate(tipo, nome)`, criada a macro `delete(obj)` para desalocar objetos instanciados, e agora as classes herdam também metodos e atributos de classes superiores além da classe pai. Foram adicionados várias saídas de debug (estão comentadas, nas proximas atualizações disponibilizaremos um modo debug), e algumas outras correções menores foram realizadas.
+
 01-08-17: Classes filhas herdam diretamente atributos das classe pai. Foram reescritas algumas mentagens de erro.
 
 28-07-17: Agora classes possuem atributos, e funções podem modificar e retornar tais atributos. Os atributos só podem ser modificados por funções internas a classe. No momento, os atributos devem ser endereçados nas classes pais e filhas, o mesmo não é necessário para as funções, precisando ser endereçadas somente na classe pai. Você deve tomar cuidado com as nomenclaturas ao utilizar a função `get(nome, valor)`, porém ela deve ser trabalhada para evitar problemas. A próxima atualização deve vir correções aos problemas citados. Utilize o arquivo `oo.c` para ter um exemplo de uso, retire comentários para poder ver alguns exemplos e limitações de tratamento de erros.
