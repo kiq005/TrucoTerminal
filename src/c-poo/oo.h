@@ -22,11 +22,9 @@ static int __i__, __j__, __methods__=0;
 static Object _scope_;
 static Class _super_;
 
-#define class(name, ...) Class name = {NULL, #name, __VA_ARGS__}
-#define extends(name, super, ...) Class name = {&super, #name, __VA_ARGS__}
-/*Precisamos trocar o modo de definição de atributos para uma variavel em loop while(!=null)
- assim conseguiremos herdar corretamente de classes avós!!!*/
-#define instanciate(_type_, name) \
+#define class(name, ...) Class name = {&__OBJECT__, #name, {}, __VA_ARGS__}
+#define extends(name, super, ...) Class name = {&super, #name, {}, __VA_ARGS__}
+#define instanciate(_type_, name, ...) \
 	Object* name = (Object*)malloc(sizeof(Object));\
 	name->_type = &_type_;\
 	for(__i__=0;__i__<MAX_MET; __i__++){\
@@ -61,39 +59,40 @@ static Class _super_;
 	/*Finaliza instanciação*/\
 	for(;__i__<MAX_MET;__i__++){\
 		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
-	}
-
-
-#define function(visibility, name, cmd) \
-	generic _##name (Object this, va_list args){cmd}; Method name = {visibility, #name, &_##name}
-#define _override_function_(visibility, _name_, nameidx, _class_, cmd) \
-	generic _##_name_##nameidx (Object this, va_list args){cmd}; Method _o_##_name_##nameidx= {public, #_name_, &_##_name_##nameidx};\
+	}\
+	/*Chama o método de inicialização*/\
+	__realize_call__(_scope_=*name, "__init__", ##__VA_ARGS__ );
+#define var(visibility, type, name) \
+	Attribute name = {visibility, #type, #name};
+#define PASTER(x, y) x ## _ ## y
+#define EVALUATOR(x, y) PASTER(x, y)/* O uso da macro EVALUATOR permite multipla concatenação */
+#define function(_class_, visibility, _name_, cmd) \
+	generic EVALUATOR(_, EVALUATOR(_name_, __LINE__)) (Object this, va_list args){cmd};\
+	Method EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)) = {public, #_name_, &EVALUATOR(_, EVALUATOR(_name_, __LINE__))};\
 	/*GNU C*/\
-	__attribute__((constructor)) _init_##_name_##nameidx(){\
-		_o_##_name_##nameidx._visibility = _name_._visibility;\
+	__attribute__((constructor)) EVALUATOR(_init_, EVALUATOR(_name_, __LINE__)) (){\
 		for(__i__=0; __i__<MAX_MET; __i__++){ \
 			if(_class_.methods[__i__]==NULL){ \
-				_class_.methods[__i__]=&_o_##_name_##nameidx; \
+				_class_.methods[__i__]=&EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)); \
 				break; \
 			} \
 		} \
 	};
-#define override(_class_, name, cmd) \
-	_override_function_(name._visibility, name, __methods__, _class_, cmd)
-#define var(visibility, type, name) \
-	Attribute name = {visibility, #type, #name};
+#define constructor(_class_, cmd) \
+	function(_class_, public, __init__, cmd);
+#define arg(type, name) \
+	type name = va_arg(args, type);
 #define get(att_name)\
-	this.attributes[__get_attribute_index__(this, #att_name)]->_value;
-#define set(att_name, __value__)\
-	/*printf("DEBUG: Estamos na classe %s.\n", this._type->_name);*/\
-	this.attributes[__get_attribute_index__(this, #att_name)]->_value = __value__;
-	
+	this.attributes[__get_attribute_index__(this, #att_name)]->_value
+#define call(obj, func, ...)\
+	__realize_call__(_scope_=*obj, #func, ##__VA_ARGS__)
 #define delete(_obj_)\
 	for(__i__=0; __i__<MAX_MET; __i__++){\
 		free(_obj_->attributes[__i__]);\
 	}\
 	free(_obj_)
 
+/* Estruturas */
 struct Class{
 	Class *_super;
 	char _name[MAX_LEN];
@@ -143,7 +142,7 @@ generic __find_method_on_object__(Object _obj_, char* func, va_list args){
 		}
 	}// Se não encontra o método na classe filha, procura na super
 	/*printf("Procurando na super de %s\n", _obj_._type->_name);*/
-	if(_obj_._type->_super!=NULL){
+	if(strcmp(func, "__init__")==0 || strcmp(_obj_._type->_super->_name, "__OBJECT__")!=0){
 		// Criamos uma instância da super
 		Object* super = (Object*)malloc(sizeof(Object));
 		super->_type = _obj_._type->_super;
@@ -182,5 +181,7 @@ generic __realize_call__(Object _obj, char* func, ...){
 	return _ret;
 }
 
-#define call(obj, func, ...)\
-	__realize_call__(_scope_=*obj, #func, ##__VA_ARGS__)
+/** Todo objeto herda da classe __OBJECT__ **/
+generic __init__f (void){};
+Method __init__ = {public, "__init__", &__init__f};
+Class __OBJECT__ = {NULL, "__OBJECT__", {&__init__}, {}};

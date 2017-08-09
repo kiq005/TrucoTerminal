@@ -1,42 +1,54 @@
 #include "oo.h"
-
-/* Definição das funções */
-function(public, getName,
-	//printf("Type: %s\n", (char*)this.attributes[0]->_type);
-	//printf("Nome: %s\n", (char*)this.attributes[0]->_value);
-	return "Fulano";
-	);
-function(public, setName, 
-	char* name = va_arg(args, char*);
-	set(nome, name);
-	);
-function(public, setIdade, 
-	int i = va_arg(args, int);
-	set(idade, (generic)(intptr_t)i);
-	);
-function(public, getIdade,
-	return get(idade);
-	);
-function(public, setAnoFormatura, 
-	int i = va_arg(args, int);
-	set(anoFormatura, (generic)(intptr_t)i);
-	);
-function(public, getAnoFormatura, 
-	return get(anoFormatura);
-	);
+/************************
+* TODO: 
+* - Testar objetos que contenham argumentos de um tipo definido pelo usuário!
+	Ex.: Aluno tem professor (Aluno->Professor), Pessoa tem amigo (Pessoa->Pessoa)
+* - get(valor) = (generic)(intptr_t)v;// <-- Tentar simplificar para evitar warning
+**************************/
 
 /* Definição de atributos */
 var(public, char[64], nome);
 var(public, int, idade);
 var(public, int, anoFormatura);
 /* Definição das classes */
-class(Pessoa, {&getName, &setName}, {&nome});
-extends(Aluno, Pessoa, {&setIdade, &getIdade}, {&idade});
+class(Pessoa, {&nome});
+extends(Aluno, Pessoa, {&idade});
 extends(Professor, Pessoa);
-extends(Formado, Aluno, {&getAnoFormatura, &setAnoFormatura}, {&anoFormatura});
-/* Definição de sobrecargas */
-override(Aluno, getName, 
+extends(Formado, Aluno, {&anoFormatura});
+/* Definindo inicializadores */
+constructor(Aluno, 
+	arg(char*, name);
+	arg(int, i);
+	get(nome) = name;
+	get(idade) = (generic)(intptr_t)i;
+	);
+/* Definição das funções */
+function(Pessoa, public, getName,
+	return "Fulano";
+	);
+function(Pessoa, public, setName, 
+	arg(char*, name);
+	get(nome) = name;
+	);
+function(Aluno, public, setIdade, 
+	arg(int, i);
+	get(idade) = (generic)(intptr_t)i;
+	);
+function(Aluno, public, getIdade,
+	return get(idade);
+	);
+function(Aluno, public, getName, 
 	return get(nome);
+	);
+function(Formado, public, setAnoFormatura, 
+	arg(int, i);
+	get(anoFormatura)= (generic)(intptr_t)i;
+	);
+function(Formado, public, getAnoFormatura, 
+	return get(anoFormatura);
+	);
+function(Formado, public, getName, 
+	return "Veterano";
 	);
 
 int main(void){
@@ -47,7 +59,7 @@ int main(void){
 	//puts(">>>> aluno1");
 	instanciate(Aluno, aluno1);
 	//puts(">>>> aluno2");
-	instanciate(Aluno, aluno2);
+	instanciate(Aluno, aluno2, "Zebra");
 	//puts(">>>> aluno3");
 	instanciate(Aluno, aluno3);
 	//puts(">>>> prof");
@@ -80,6 +92,9 @@ int main(void){
 	printf("Idade: %d\n", (int)(intptr_t)call(form, getIdade));
 	
 	/* Testando várias instancias */
+	puts(">> Testando inicializador");
+	printf("Nome: %s\n", (char*)call(aluno2, getName));// O nome do aluno foi setado no inicializador
+	printf("Nome: %s\n", (char*)call(aluno3, getName));// O nome do aluno foi setado no inicializador
 	puts(">> Definindo alunos");
 	call(aluno1, setName, "Ana");
 	call(aluno2, setName, "Bia");
@@ -114,6 +129,6 @@ int main(void){
 	call(aluno1, setIdade, 18);
 	printf("Nome: %s\n", (char*)call(aluno1, getName));
 	printf("Idade: %d\n", (int)(intptr_t)call(aluno1, getIdade));
-
+	
 	return 1;
 }
