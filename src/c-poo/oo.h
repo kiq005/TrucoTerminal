@@ -18,12 +18,21 @@ int __get_attribute_index__(Object this, char* att_name);
 generic __realize_call__(Object _obj_, char* func, ...);
 generic __find_method_on_object__(Object _obj_, char* func, va_list args);
 
-static int __i__, __j__, __methods__=0;
+static int __i__, __j__;
 static Object _scope_;
 static Class _super_;
 
-#define class(name, ...) Class name = {&__OBJECT__, #name, {}, __VA_ARGS__}
-#define extends(name, super, ...) Class name = {&super, #name, {}, __VA_ARGS__}
+/* A macro class pode receber 1 ou 2 argumentos */
+#define DEF_CLASS(_1, _2, NAME, ...) NAME
+#define CLASS1(name) Class name = {&__OBJECT__, #name, {}, {}}
+#define CLASS2(name, att_list) Class name = {&__OBJECT__, #name, {}, att_list}
+#define class(...) DEF_CLASS(__VA_ARGS__, CLASS2, CLASS1)(__VA_ARGS__)
+/* A macro extends pode receber 2 ou 3 argumentos */
+#define DEF_EXTENDS(_1, _2, _3, NAME, ...) NAME
+#define EXTENDS2(name, super) Class name = {&super, #name, {}, {}}
+#define EXTENDS3(name, super, att_list) Class name = {&super, #name, {}, att_list}
+#define extends(...) DEF_EXTENDS(__VA_ARGS__, EXTENDS3, EXTENDS2)(__VA_ARGS__)
+
 #define instanciate(_type_, name, ...) \
 	Object* name = (Object*)malloc(sizeof(Object));\
 	name->_type = &_type_;\
@@ -63,14 +72,14 @@ static Class _super_;
 	/*Chama o método de inicialização*/\
 	__realize_call__(_scope_=*name, "__init__", ##__VA_ARGS__ );
 #define var(visibility, type, name) \
-	Attribute name = {visibility, #type, #name};
+	Attribute name = {visibility, #type, #name, NULL};
 #define PASTER(x, y) x ## _ ## y
 #define EVALUATOR(x, y) PASTER(x, y)/* O uso da macro EVALUATOR permite multipla concatenação */
-#define function(_class_, visibility, _name_, cmd) \
-	generic EVALUATOR(_, EVALUATOR(_name_, __LINE__)) (Object this, va_list args){cmd};\
+#define function(_class_, visibility, _name_, ...) \
+	generic EVALUATOR(_, EVALUATOR(_name_, __LINE__)) (Object this, va_list args){__VA_ARGS__;this=this;va_end(args);return NULL;};\
 	Method EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)) = {public, #_name_, &EVALUATOR(_, EVALUATOR(_name_, __LINE__))};\
 	/*GNU C*/\
-	__attribute__((constructor)) EVALUATOR(_init_, EVALUATOR(_name_, __LINE__)) (){\
+	__attribute__((constructor)) void EVALUATOR(_init_, EVALUATOR(_name_, __LINE__)) (){\
 		for(__i__=0; __i__<MAX_MET; __i__++){ \
 			if(_class_.methods[__i__]==NULL){ \
 				_class_.methods[__i__]=&EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)); \
@@ -78,8 +87,8 @@ static Class _super_;
 			} \
 		} \
 	};
-#define constructor(_class_, cmd) \
-	function(_class_, public, __init__, cmd);
+#define constructor(_class_, ...) \
+	function(_class_, public, __init__, __VA_ARGS__);
 #define arg(type, name) \
 	type name = va_arg(args, type);
 #define get(att_name)\
@@ -182,6 +191,6 @@ generic __realize_call__(Object _obj, char* func, ...){
 }
 
 /** Todo objeto herda da classe __OBJECT__ **/
-generic __init__f (void){};
+generic __init__f (void){return NULL;};
 Method __init__ = {public, "__init__", &__init__f};
 Class __OBJECT__ = {NULL, "__OBJECT__", {&__init__}, {}};

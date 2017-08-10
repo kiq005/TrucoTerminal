@@ -59,7 +59,7 @@ int main(void){
 	//puts(">>>> aluno1");
 	instanciate(Aluno, aluno1);
 	//puts(">>>> aluno2");
-	instanciate(Aluno, aluno2, "Zebra");
+	instanciate(Aluno, aluno2, "Zebra", 40);
 	//puts(">>>> aluno3");
 	instanciate(Aluno, aluno3);
 	//puts(">>>> prof");
@@ -94,7 +94,9 @@ int main(void){
 	/* Testando várias instancias */
 	puts(">> Testando inicializador");
 	printf("Nome: %s\n", (char*)call(aluno2, getName));// O nome do aluno foi setado no inicializador
+	printf("Idade: %d\n", (int)(intptr_t)call(aluno2, getIdade));
 	printf("Nome: %s\n", (char*)call(aluno3, getName));// O nome do aluno foi setado no inicializador
+	printf("Idade: %d\n", (int)(intptr_t)call(aluno3, getIdade));
 	puts(">> Definindo alunos");
 	call(aluno1, setName, "Ana");
 	call(aluno2, setName, "Bia");
@@ -122,6 +124,7 @@ int main(void){
 	printf("Nome: %s\n", (char*)call(aluno3, getName));
 	printf("Nome: %s\n", (char*)call(fulano, getName));
 
+	printf("[Line: %d]\n", __LINE__);
 	/* Teste de desalocação */
 	puts(">> Desalocando aluno1");
 	delete(aluno1);
