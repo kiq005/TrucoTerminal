@@ -20,7 +20,7 @@ typedef struct Attribute Attribute;
 typedef struct Method Method;
 typedef struct Object Object;
 int __get_attribute_index__(Object this, int _callLine_, char* att_name);
-generic __realize_call__(Object _obj, int _callLine_, char* func, ...);
+generic __realize_call__(Object *_obj, int _callLine_, char* func, ...);
 generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_list args);
 
 static int __i__, __j__;
@@ -67,7 +67,7 @@ static Class _super_;
 		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
 	}\
 	/*Chama o método de inicialização*/\
-	__realize_call__(_scope_=*name, __LINE__, "__init__", ##__VA_ARGS__ );
+	__realize_call__(name, __LINE__, "__init__", ##__VA_ARGS__ );
 #define var(visibility, type, name) \
 	Attribute name = {visibility, #type, #name, NULL};
 #define PASTER(x, y) x ## _ ## y
@@ -91,7 +91,7 @@ static Class _super_;
 #define get(att_name)\
 	this.attributes[__get_attribute_index__(this, __LINE__, #att_name)]->_value
 #define call(obj, func, ...)\
-	__realize_call__(_scope_=*obj, __LINE__, #func, ##__VA_ARGS__)
+	__realize_call__(obj, __LINE__, #func, ##__VA_ARGS__)
 #define delete(_obj_)\
 	for(__i__=0; __i__<MAX_MET; __i__++){\
 		free(_obj_->attributes[__i__]);\
@@ -178,11 +178,12 @@ generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_l
 	return NULL;
 }
 
-generic __realize_call__(Object _obj, int _callLine_, char* func, ...){
+generic __realize_call__(Object *_obj, int _callLine_, char* func, ...){
+	_scope_ = *_obj;
 	generic _ret;
 	va_list args;
 	va_start(args, func);
-	_ret = __find_method_on_object__(_obj, _callLine_, func, args);
+	_ret = __find_method_on_object__(_scope_, _callLine_, func, args);
 	va_end(args);
 	return _ret;
 }

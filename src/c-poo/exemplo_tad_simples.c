@@ -30,7 +30,7 @@ int main(void){
     call(prof1, setName, "Carlos");
     call(aluno1, setProf, prof1);
     
-    printf("%s é aluno do %s.\n", (char*)call(aluno1, getName), (char*)call((Object*)(call(aluno1, getProf)), getName));
+    printf("%s é aluno de %s.\n", (char*)call(aluno1, getName), (char*)call((Object*)(call(aluno1, getProf)), getName));
     
 	return 0;
 }
