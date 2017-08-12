@@ -10,10 +10,12 @@
 var(public, char[64], nome);
 var(public, int, idade);
 var(public, int, anoFormatura);
+
+var(public, Object, prof);
 /* Definição das classes */
 class(Pessoa, {&nome});
-extends(Aluno, Pessoa, {&idade});
-extends(Professor, Pessoa);
+extends(Aluno, Pessoa, {&prof, &idade});
+extends(Professor, Pessoa, {});
 extends(Formado, Aluno, {&anoFormatura});
 /* Definindo inicializadores */
 constructor(Aluno, 
@@ -24,12 +26,16 @@ constructor(Aluno,
 	);
 /* Definição das funções */
 function(Pessoa, public, getName,
-	return "Fulano";
+	return get(nome);
 	);
 function(Pessoa, public, setName, 
 	arg(char*, name);
 	get(nome) = name;
 	);
+function(Pessoa, public, getUndefVar,
+	return get(undef);
+	);
+
 function(Aluno, public, setIdade, 
 	arg(int, i);
 	get(idade) = (generic)(intptr_t)i;
@@ -40,6 +46,15 @@ function(Aluno, public, getIdade,
 function(Aluno, public, getName, 
 	return get(nome);
 	);
+function(Aluno, public, setProf,
+	arg(Object*, p);
+	get(prof) = p;
+	);
+function(Aluno, public, getProf, 
+	return get(prof);
+	);
+
+
 function(Formado, public, setAnoFormatura, 
 	arg(int, i);
 	get(anoFormatura)= (generic)(intptr_t)i;
@@ -70,13 +85,12 @@ int main(void){
 	puts(">> Chamando funções em fulano");
 	printf("Nome: %s\n", (char*)call(fulano, getName));
 	call(fulano, setName, "João");
-	call(fulano, setIdade, 32);
 	printf("Nome: %s\n", (char*)call(fulano, getName));// a chamada getName retorna "Fulano"
+	call(fulano, setIdade, 32);
 	printf("Idade: %d\n", (int)(intptr_t)call(fulano, getIdade));
+	printf("Variável Indefinida: %s\n", (char*)call(fulano, getUndefVar));
 	call(fulano, setName, "Josevaldo");
-	call(fulano, setIdade, 34);
 	printf("Nome: %s\n", (char*)call(fulano, getName));
-	printf("Idade: %d\n", (int)(intptr_t)call(fulano, getIdade));
 
 	/* Testando herança direta */
 	puts(">> Chamando funções em aluno1");
@@ -124,7 +138,11 @@ int main(void){
 	printf("Nome: %s\n", (char*)call(aluno3, getName));
 	printf("Nome: %s\n", (char*)call(fulano, getName));
 
-	printf("[Line: %d]\n", __LINE__);
+	puts(">> Testes com TADs");
+	call(prof, setName, "Adolfo");
+	call(aluno1, setProf, prof);
+	printf("%s é aluno de %s.\n", (char*)call(aluno1, getName), (char*)call((Object*)(call(aluno1, getProf)), getName));
+
 	/* Teste de desalocação */
 	puts(">> Desalocando aluno1");
 	delete(aluno1);
@@ -133,5 +151,5 @@ int main(void){
 	printf("Nome: %s\n", (char*)call(aluno1, getName));
 	printf("Idade: %d\n", (int)(intptr_t)call(aluno1, getIdade));
 	
-	return 1;
+	return 0;
 }

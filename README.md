@@ -45,7 +45,7 @@ class(Pessoa, {&nome, &idade});
 
 Para definir classes que herdam (filhas) de outras, use: `extends(nome, pai, lista_de_atributos);`, por exemplo:
 ```C
-extends(Aluno, Pessoa, {&nota}, {&ano});
+extends(Aluno, Pessoa, {&nota, &ano});
 ```
 
 - **Inicialização**
@@ -72,6 +72,47 @@ printf("Nome: %s\n", (char*)call(aluno, getName));
 call(aluno, setName, "Bia");
 printf("Nome: %s\n", (char*)call(aluno, getName));
 ```
+- ** TAD **
+
+Atualmente, para utilizar as classes como tipos de dados, você pode utilizar o tipo _**Object**_, tanto para definição de variável quanto para conversões, e utilizar a macro **instanciate** quando necessário. Por exemplo:
+```C
+#include "oo.h"
+
+var(public, char[64], nome);
+var(public, Object, prof);
+
+class(Pessoa, {&nome});
+extends(Aluno, Pessoa, {&prof});
+extends(Professor, Pessoa, {});
+
+function(Pessoa, public, getName, 
+	return get(nome);
+    );
+function(Pessoa, public, setName, 
+	arg(char*, name);
+    get(nome) = name;
+    );
+function(Aluno, public, getProf,
+	return get(prof);
+    );
+function(Aluno, public, setProf,
+	arg(Object*, p);
+    get(prof) = p;
+	);
+
+int main(void){
+	instanciate(Aluno, aluno1);
+    instanciate(Professor, prof1);
+    
+    call(aluno1, setName, "Pedro");
+    call(prof1, setName, "Carlos");
+    call(aluno1, setProf, prof1);
+    
+    printf("%s é aluno do %s.\n", (char*)call(aluno1, getName), (char*)call((Object*)(call(aluno1, getProf)), getName));
+    
+	return 0;
+}
+```
 
 - ** Exemplo completo **
 
@@ -85,7 +126,7 @@ var(public, int, anoFormatura);
 /* Definição das classes */
 class(Pessoa, {&nome});
 extends(Aluno, Pessoa, {&idade});// A Classe Aluno herda da Classe Pessoa
-extends(Professor, Pessoa);// A Classe Professor herda da Classe Pessoa
+extends(Professor, Pessoa, {});// A Classe Professor herda da Classe Pessoa
 extends(Formado, Aluno, {&anoFormatura});// A Classe Formado herda da Classe Aluno
 /* Definição de inicializadores */
 constructor(Aluno,
@@ -142,7 +183,9 @@ int main(void){
 ```
 
 ## Updates
-09-08-17: Diversas mudanças significativas foram realizadas nesta versão. Primeiramente, agora todas as classes herdam de `__OBJECT__`, ao invés de manter uma referência `NULL` para a super, isto foi feito para permitir um uso correto de uma função de inicialização. Além disso, antes não era possível sobrecarregar uma função em diferentes classes, por exemplo, ao definir a função `getName()` na classe Pessoa, ela só poderia ser sobrecarregada na classe Aluno ou Professor, que herdam da classe pessoa, mas não nas duas; este erro foi corrigido. Ainda sobre **override**, a macro tomou lugar da **function**, assim, não é mais necessário definir funções, marca-las nas classes, e depois realizar sobrecargas marcadas; agora basta declarar as funções, indicando á qual classe ela pertence. Também foram criadas as macros **EVALUATOR** e **PASTER**, com base em https://stackoverflow.com/questions/1489932/how-to-concatenate-twice-with-the-c-preprocessor-and-expand-a-macro-as-in-arg para permitir concatenação multipla no preprocessador. Outra macro criada é a **arg** que simplesmente simplifica a tomada de argumentos em uma função. Note que a macro **override** foi removida, e além dela, a macro **set**, pois ela não permitia trabalho com _array_ ou matrizes, assim, utilize `get(nome) = valor` ao invés. Para definir a função de inicialização de um objeto, basta utilizar a nova macro **constructor**, com o nome da classe e os comandos. Os argumentos do inicializador são passados na macro **instanciate**. Outras pequenas correções foram feitas para que a compilação, utilizando o compilador **gcc** com as _flag _ **-Wall** e **-Wextra** não gere mensagens de _warning_, como a criação das macros **DEF_CLASS**, **CLASS1**, **CLASS2**, **DEF_EXTENDS**, **EXTENDS2**, **EXTENDS3**, (com base em https://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments), para permitir que as macros **class** e **extends** tenham sobrecarga para chamadas com 1 e 2, 2 e 3 argumentos, respectivamente.
+12-08-17: Foi verificado a possibilidade de uso de TADs(veja acima como utilizar). Foram removidas as macros **DEF_CLASS**, **CLASS1**, **CLASS2**, **DEF_EXTENDS**, **EXTENDS2**, **EXTENDS3**, pois elas impediam a passagem de listas diretas para as definições de **classes** e **extenções**, o que não altera o código, você pode criar normalmente classes passando apenas dois argumentos(por exemplo, `class(Professor)`) caso ela não possua atributos, o mesmo vale para extenções, porém o código gerará um _warning_ se compilado com as _flags_ **-Wall -Wextra**. Para evitar os avisos, passe uma lista vazia caso a classe não possua atributos (por exemplo, `class(Professor, {})`). Uma mudança significativa foi a modificação do cabeçalho de alguns métodos, e a modificação de diversas chamadas em macros, para permitir que as mensagens de erro geradas exibam também a linha que gerou o erro. Códigos gerados na atualização anterior são compativeis.
+
+09-08-17: Diversas mudanças significativas foram realizadas nesta versão. Primeiramente, agora todas as classes herdam de `__OBJECT__`, ao invés de manter uma referência `NULL` para a super, isto foi feito para permitir um uso correto de uma função de inicialização. Além disso, antes não era possível sobrecarregar uma função em diferentes classes, por exemplo, ao definir a função `getName()` na classe Pessoa, ela só poderia ser sobrecarregada na classe Aluno ou Professor, que herdam da classe pessoa, mas não nas duas; este erro foi corrigido. Ainda sobre **override**, a macro tomou lugar da **function**, assim, não é mais necessário definir funções, marca-las nas classes, e depois realizar sobrecargas marcadas; agora basta declarar as funções, indicando á qual classe ela pertence. Também foram criadas as macros **EVALUATOR** e **PASTER**, com base em https://stackoverflow.com/questions/1489932/how-to-concatenate-twice-with-the-c-preprocessor-and-expand-a-macro-as-in-arg para permitir concatenação multipla no preprocessador. Outra macro criada é a **arg** que simplesmente simplifica a tomada de argumentos em uma função. Note que a macro **override** foi removida, e além dela, a macro **set**, pois ela não permitia trabalho com _array_ ou matrizes, assim, utilize `get(nome) = valor` ao invés. Para definir a função de inicialização de um objeto, basta utilizar a nova macro **constructor**, com o nome da classe e os comandos. Os argumentos do inicializador são passados na macro **instanciate**. Outras pequenas correções foram feitas para que compilações utilizando o compilador **gcc** com as _flags_ **-Wall** e **-Wextra** não gerem mensagens de _warning_, como a criação das macros **DEF_CLASS**, **CLASS1**, **CLASS2**, **DEF_EXTENDS**, **EXTENDS2**, **EXTENDS3**, (com base em https://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments), para permitir que as macros **class** e **extends** tenham sobrecarga para chamadas com 1 e 2, 2 e 3 argumentos, respectivamente. Códigos gerados na atualização anterior podem não ser compativeis.
 
 03-08-17: Implementado polimorfismo de funções (_override_), apagado a função `__find_method_on_class__`, invertida a ordem de instanciação para `instanciate(tipo, nome)`, criada a macro `delete(obj)` para desalocar objetos instanciados, e agora as classes herdam também metodos e atributos de classes superiores além da classe pai. Foram adicionados várias saídas de debug (estão comentadas, nas proximas atualizações disponibilizaremos um modo debug), e algumas outras correções menores foram realizadas.
 

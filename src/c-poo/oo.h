@@ -1,3 +1,8 @@
+/******
+ * - Removidas as macros DEF_EXTENDS, EXTENDS2, EXTENDS3, DEF_CLASS< CLASS1, CLASS2, 
+ * por causarem erros com passagem de listas.
+ ******/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,24 +19,16 @@ typedef struct Class Class;
 typedef struct Attribute Attribute;
 typedef struct Method Method;
 typedef struct Object Object;
-int __get_attribute_index__(Object this, char* att_name);
-generic __realize_call__(Object _obj_, char* func, ...);
-generic __find_method_on_object__(Object _obj_, char* func, va_list args);
+int __get_attribute_index__(Object this, int _callLine_, char* att_name);
+generic __realize_call__(Object _obj, int _callLine_, char* func, ...);
+generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_list args);
 
 static int __i__, __j__;
 static Object _scope_;
 static Class _super_;
 
-/* A macro class pode receber 1 ou 2 argumentos */
-#define DEF_CLASS(_1, _2, NAME, ...) NAME
-#define CLASS1(name) Class name = {&__OBJECT__, #name, {}, {}}
-#define CLASS2(name, att_list) Class name = {&__OBJECT__, #name, {}, att_list}
-#define class(...) DEF_CLASS(__VA_ARGS__, CLASS2, CLASS1)(__VA_ARGS__)
-/* A macro extends pode receber 2 ou 3 argumentos */
-#define DEF_EXTENDS(_1, _2, _3, NAME, ...) NAME
-#define EXTENDS2(name, super) Class name = {&super, #name, {}, {}}
-#define EXTENDS3(name, super, att_list) Class name = {&super, #name, {}, att_list}
-#define extends(...) DEF_EXTENDS(__VA_ARGS__, EXTENDS3, EXTENDS2)(__VA_ARGS__)
+#define class(name, ...) Class name = {&__OBJECT__, #name, {}, ##__VA_ARGS__}
+#define extends(name, super, ...) Class name = {&super, #name, {}, ##__VA_ARGS__}
 
 #define instanciate(_type_, name, ...) \
 	Object* name = (Object*)malloc(sizeof(Object));\
@@ -70,7 +67,7 @@ static Class _super_;
 		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
 	}\
 	/*Chama o método de inicialização*/\
-	__realize_call__(_scope_=*name, "__init__", ##__VA_ARGS__ );
+	__realize_call__(_scope_=*name, __LINE__, "__init__", ##__VA_ARGS__ );
 #define var(visibility, type, name) \
 	Attribute name = {visibility, #type, #name, NULL};
 #define PASTER(x, y) x ## _ ## y
@@ -92,9 +89,9 @@ static Class _super_;
 #define arg(type, name) \
 	type name = va_arg(args, type);
 #define get(att_name)\
-	this.attributes[__get_attribute_index__(this, #att_name)]->_value
+	this.attributes[__get_attribute_index__(this, __LINE__, #att_name)]->_value
 #define call(obj, func, ...)\
-	__realize_call__(_scope_=*obj, #func, ##__VA_ARGS__)
+	__realize_call__(_scope_=*obj, __LINE__, #func, ##__VA_ARGS__)
 #define delete(_obj_)\
 	for(__i__=0; __i__<MAX_MET; __i__++){\
 		free(_obj_->attributes[__i__]);\
@@ -127,22 +124,22 @@ struct Object{
 	Attribute *attributes[MAX_MET];
 };
 
-int __get_attribute_index__(Object this, char* att_name){
+int __get_attribute_index__(Object this, int _callLine_, char* att_name){
 	/*fprintf(stderr, "DEBUG: Procurando em %s o atributo %s.\n", this._type->_name, att_name);*/
 	for(__i__=0; __i__<MAX_MET; __i__++){
 		if(strcmp(att_name, (*this.attributes[__i__])._name)==0) return __i__;
 	}
-	fprintf(stderr, "Erro: A classe '%s' não possui um atributo '%s'.\n", this._type->_name, att_name);
+	fprintf(stderr, "Erro: A classe '%s' não possui um atributo '%s'.[Linha: %d]\n", this._type->_name, att_name, _callLine_);
 	return -1;
 }
 
-generic __find_method_on_object__(Object _obj_, char* func, va_list args){
+generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_list args){
 	generic _ret;
 	for(__i__=0;_obj_._type->methods[__i__]!=NULL && __i__<MAX_MET;__i__++){
 		if(strcmp(_obj_._type->methods[__i__]->_name, func)==0){
 			if(_obj_._type->methods[__i__]->_visibility==private){
 				if(!strcmp(_obj_._type->_name, _scope_._type->_name)==0){
-					fprintf(stderr, "Erro: A função '%s' é privada em '%s'.\n", func, _obj_._type->_name);
+					fprintf(stderr, "Erro: A função '%s' é privada em '%s'.[Linha: %d]\n", func, _obj_._type->_name, _callLine_);
 					return NULL;
 				}
 			}
@@ -165,7 +162,7 @@ generic __find_method_on_object__(Object _obj_, char* func, va_list args){
 			super->attributes[__i__]->_value = _obj_.attributes[__i__]->_value;
 		}
 		// Chamamos recursivamente o método passando a super
-		_ret = __find_method_on_object__(*super, func, args);
+		_ret = __find_method_on_object__(*super, _callLine_, func, args);
 		// Depois de pronto, desalocamos tudo
 		for(__i__=0;__i__<MAX_MET; __i__++){
 			// Repassamos os atributos redefidos na super para a filha, antes de desalocar
@@ -177,15 +174,15 @@ generic __find_method_on_object__(Object _obj_, char* func, va_list args){
 		return _ret;
 		//return (generic) __find_method_on_class__(*_obj_.type._super, func);
 	}
-	fprintf(stderr, "Erro: A classe '%s' não possui a função '%s'.\n", _obj_._type->_name, func);
+	fprintf(stderr, "Erro: A classe '%s' não possui a função '%s'.[Linha: %d]\n", _obj_._type->_name, func, _callLine_);
 	return NULL;
 }
 
-generic __realize_call__(Object _obj, char* func, ...){
+generic __realize_call__(Object _obj, int _callLine_, char* func, ...){
 	generic _ret;
 	va_list args;
 	va_start(args, func);
-	_ret = __find_method_on_object__(_obj, func, args);
+	_ret = __find_method_on_object__(_obj, _callLine_, func, args);
 	va_end(args);
 	return _ret;
 }
