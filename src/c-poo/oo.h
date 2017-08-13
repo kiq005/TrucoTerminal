@@ -19,9 +19,9 @@ typedef struct Class Class;
 typedef struct Attribute Attribute;
 typedef struct Method Method;
 typedef struct Object Object;
-int __get_attribute_index__(Object this, int _callLine_, char* att_name);
-generic __realize_call__(Object *_obj, int _callLine_, char* func, ...);
-generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_list args);
+int __get_attribute_index__(Object this, int _callLine_, char* _callFile_,char* att_name);
+generic __realize_call__(Object *_obj, int _callLine_, char* _callFile_, char* func, ...);
+generic __find_method_on_object__(Object _obj_, int _callLine_,  char* _callFile_,char* func, va_list args);
 
 static int __i__, __j__;
 static Object _scope_;
@@ -67,19 +67,19 @@ static Class _super_;
 		name->attributes[__i__]=(Attribute*)malloc(sizeof(Attribute));\
 	}\
 	/*Chama o método de inicialização*/\
-	__realize_call__(name, __LINE__, "__init__", ##__VA_ARGS__ );
+	__realize_call__(name, __LINE__, __FILE__, "__init__", ##__VA_ARGS__ );
 #define var(visibility, type, name) \
-	Attribute name = {visibility, #type, #name, NULL};
+	static Attribute name = {visibility, #type, #name, NULL};
 #define PASTER(x, y) x ## _ ## y
 #define EVALUATOR(x, y) PASTER(x, y)/* O uso da macro EVALUATOR permite multipla concatenação */
 #define function(_class_, visibility, _name_, ...) \
-	generic EVALUATOR(_, EVALUATOR(_name_, __LINE__)) (Object this, va_list args){__VA_ARGS__;this=this;va_end(args);return NULL;};\
-	Method EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)) = {public, #_name_, &EVALUATOR(_, EVALUATOR(_name_, __LINE__))};\
+	generic EVALUATOR(_, EVALUATOR(_class_,EVALUATOR(_name_, __LINE__))) (Object this, va_list args){__VA_ARGS__;this=this;va_end(args);return NULL;};\
+	Method EVALUATOR(_o_, EVALUATOR(_class_,EVALUATOR(_name_, __LINE__))) = {public, #_name_, &EVALUATOR(_, EVALUATOR(_class_,EVALUATOR(_name_, __LINE__)))};\
 	/*GNU C*/\
-	__attribute__((constructor)) void EVALUATOR(_init_, EVALUATOR(_name_, __LINE__)) (){\
+	__attribute__((constructor)) void EVALUATOR(_init_, EVALUATOR(_class_, EVALUATOR(_name_, __LINE__))) (){\
 		for(__i__=0; __i__<MAX_MET; __i__++){ \
 			if(_class_.methods[__i__]==NULL){ \
-				_class_.methods[__i__]=&EVALUATOR(_o_, EVALUATOR(_name_, __LINE__)); \
+				_class_.methods[__i__]=&EVALUATOR(_o_, EVALUATOR(_class_,EVALUATOR(_name_, __LINE__))); \
 				break; \
 			} \
 		} \
@@ -89,9 +89,9 @@ static Class _super_;
 #define arg(type, name) \
 	type name = va_arg(args, type);
 #define get(att_name)\
-	this.attributes[__get_attribute_index__(this, __LINE__, #att_name)]->_value
+	this.attributes[__get_attribute_index__(this, __LINE__, __FILE__, #att_name)]->_value
 #define call(obj, func, ...)\
-	__realize_call__(obj, __LINE__, #func, ##__VA_ARGS__)
+	__realize_call__(obj, __LINE__, __FILE__, #func, ##__VA_ARGS__)
 #define delete(_obj_)\
 	for(__i__=0; __i__<MAX_MET; __i__++){\
 		free(_obj_->attributes[__i__]);\
@@ -124,16 +124,16 @@ struct Object{
 	Attribute *attributes[MAX_MET];
 };
 
-int __get_attribute_index__(Object this, int _callLine_, char* att_name){
+int __get_attribute_index__(Object this, int _callLine_, char* _callFile_,char* att_name){
 	/*fprintf(stderr, "DEBUG: Procurando em %s o atributo %s.\n", this._type->_name, att_name);*/
 	for(__i__=0; __i__<MAX_MET; __i__++){
 		if(strcmp(att_name, (*this.attributes[__i__])._name)==0) return __i__;
 	}
-	fprintf(stderr, "Erro: A classe '%s' não possui um atributo '%s'.[Linha: %d]\n", this._type->_name, att_name, _callLine_);
+	fprintf(stderr, "Erro: A classe '%s' não possui um atributo '%s'.[Linha: %d : %s]\n", this._type->_name, att_name, _callLine_, _callFile_);
 	return -1;
 }
 
-generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_list args){
+generic __find_method_on_object__(Object _obj_, int _callLine_, char* _callFile_, char* func, va_list args){
 	generic _ret;
 	for(__i__=0;_obj_._type->methods[__i__]!=NULL && __i__<MAX_MET;__i__++){
 		if(strcmp(_obj_._type->methods[__i__]->_name, func)==0){
@@ -162,7 +162,7 @@ generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_l
 			super->attributes[__i__]->_value = _obj_.attributes[__i__]->_value;
 		}
 		// Chamamos recursivamente o método passando a super
-		_ret = __find_method_on_object__(*super, _callLine_, func, args);
+		_ret = __find_method_on_object__(*super, _callLine_, _callFile_, func, args);
 		// Depois de pronto, desalocamos tudo
 		for(__i__=0;__i__<MAX_MET; __i__++){
 			// Repassamos os atributos redefidos na super para a filha, antes de desalocar
@@ -174,16 +174,16 @@ generic __find_method_on_object__(Object _obj_, int _callLine_, char* func, va_l
 		return _ret;
 		//return (generic) __find_method_on_class__(*_obj_.type._super, func);
 	}
-	fprintf(stderr, "Erro: A classe '%s' não possui a função '%s'.[Linha: %d]\n", _obj_._type->_name, func, _callLine_);
+	fprintf(stderr, "Erro: A classe '%s' não possui a função '%s'.[Linha: %d : %s]\n", _obj_._type->_name, func, _callLine_, _callFile_);
 	return NULL;
 }
 
-generic __realize_call__(Object *_obj, int _callLine_, char* func, ...){
+generic __realize_call__(Object *_obj, int _callLine_, char* _callFile_, char* func, ...){
 	_scope_ = *_obj;
 	generic _ret;
 	va_list args;
 	va_start(args, func);
-	_ret = __find_method_on_object__(_scope_, _callLine_, func, args);
+	_ret = __find_method_on_object__(_scope_, _callLine_, _callFile_, func, args);
 	va_end(args);
 	return _ret;
 }
