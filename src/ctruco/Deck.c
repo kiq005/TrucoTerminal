@@ -1,20 +1,38 @@
-/* Constantes sobre definição */
+/**************
+ * Constantes *
+ **************/
 #define _NUM_CARTAS 40
-/* Atributos */
+/*************
+ * Atributos *
+ *************/
 var(public, Object*, deck);
 var(public, int, topo);
-/* Classe */
+/**********
+ * Classe *
+ **********/
 class(Deck, {&deck, &topo});// <-- Deve implementar a interface "PuxaCarta"
-/* Construtor */
+/**************
+ * Construtor *
+ **************/
 constructor(Deck, 
 	get(deck) = malloc(sizeof(int)*_NUM_CARTAS);
 	call(&this, fazerMonte);
 	);
-/* Métodos */
+/***********
+ * Funções *
+ ***********/
+/*
+ * Deck:fazerMonte - 
+ * Cria o monte e embaralha.
+ */
 function(Deck, public, fazerMonte,
 	call(&this, criaDeck);
 	call(&this, embaralha);
 	);
+/*
+ * Deck:criaDeck - 
+ * Cria o monte de cartas em ordem crescente de valor
+ */
 function(Deck, public, criaDeck,
 	int v, n;
 	//puts("<< GRANDE POTENCIAL DE ERRO 1 >>");
@@ -27,10 +45,18 @@ function(Deck, public, criaDeck,
 		}
 	}
 	);
+/*
+ * Deck:sorteia - 
+ * Recebe um int n, e retorna um generic int sortiado entre 0 e n.
+ */
 function(Deck, public, sorteia, 
 	arg(int, n);
 	return (generic)(intptr_t)(int)(rand()%n);
 	);
+/*
+ * Deck:embaralha - 
+ * Embaralha o monte.
+ */
 function(Deck, public, embaralha,
 	Object aux;
 	int sort, i;
@@ -42,14 +68,20 @@ function(Deck, public, embaralha,
 		((Object*)get(deck))[_NUM_CARTAS -i -1] = aux;
 	}
 	);
-
+/*
+ * Deck:imprimeDeck - 
+ * Imprime o monte
+ */
 function(Deck, public, imprimeDeck,
 	int i;
 	for(i=0; i<_NUM_CARTAS; i++){
 		printf("%s", (char*)call(&((Object*)get(deck))[i], Desenho));
 	}
 	);
-
+/*
+ * Deck:obterCarta - 
+ * Retira a carta do topo do monte
+ */
 ////// OVERRIDE de interface!!!
 function(Deck, public, obterCarta,
 	Object *c;

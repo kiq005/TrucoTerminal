@@ -1,4 +1,6 @@
-/* Constantes sobre definição */
+/**************
+ * Constantes *
+ **************/
 #define _C4 0
 #define _C5 1
 #define _C6 2
@@ -21,13 +23,21 @@
 #define _EMPATA 0
 #define _GANHA 1
 
-/* Atributos */
+/*************
+ * Atributos *
+ *************/
 var(public, int, valor);
 var(public, int, naipe);
 
-/* Classe */
+/**********
+ * Classe *
+ **********/
 class(Carta, {&valor, &naipe});
-/* Construtor */
+
+/*******************************************************
+ * Construtor - 									   *
+ * Recebe dois int, contento o valor e naipe da carta. * 
+ *******************************************************/
 constructor(Carta, 
 	arg(int, v);
 	arg(int, n);
@@ -36,7 +46,13 @@ constructor(Carta,
 	//printf("Carta criada: %d:%d - %s\n", v, n, (char*)call(&this, Desenho));
 	);
 
-/* Métodos */
+/***********
+ * Funções *
+ ***********/
+/*
+ * Carta:Desenho - 
+ * Retorna um generic char* com o Desenho da carta
+ */
 function(Carta, public, Desenho, 
 	char *carta = (char*)malloc(4);
 	switch((int)(intptr_t)get(valor)){
@@ -99,6 +115,11 @@ function(Carta, public, Desenho,
 	carta[3] = '\0';
 	return carta;
 	);
+/*
+ * Carta:Desenho - 
+ * Recebe dois Objetos, sendo o vira e a carta, e verifica se ela é manilha,
+ * retornando um generic int 1 caso verdadeiro, 0 caso falso.
+ */
 function(Carta, public, Manilha, 
 	arg(Object*, c);
 	arg(Object*, vira);
@@ -109,7 +130,11 @@ function(Carta, public, Manilha,
 	vVal = (int)(intptr_t)call(vira, getValor);
 	return (generic)(intptr_t)((cVal == vVal+1) || (cVal == _C4 && vVal == _C3));
 	);
-
+/*
+ * Carta:Ganha - 
+ * Recebe dois Objetos, sendo o vira e a outra carta, e verifica se esta carta
+ * a vence, retornando um generic int com _GANHA, _EMPATA ou _PERDE.
+ */
 function(Carta, public, Ganha,
 	arg(Object*, outra);
 	arg(Object*, vira);
@@ -142,21 +167,40 @@ function(Carta, public, Ganha,
 	//puts("<< Empatou >>");
 	return (generic)(intptr_t)_EMPATA;
 	);
-
+/*
+ * Carta:getValor - 
+ * Retorna um generic int com o valor da carta
+ */
 function(Carta, public, getValor,
 	return get(valor);
 	);
+/*
+ * Carta:setValor - 
+ * Recebe um int, e define o valor da carta.
+ */
 function(Carta, public, setValor,
 	arg(int, v);
 	get(valor) = (generic)(intptr_t)v;
 	);
+/*
+ * Carta:getNaipe - 
+ * Retorna um generic int com o Naipe da carta
+ */
 function(Carta, public, getNaipe,
 	return get(naipe);
 	);
+/*
+ * Carta:setNaipe - 
+ * Recebe um int, e define o valor da carta.
+ */
 function(Carta, public, setNaipe,
 	arg(int, n);
 	get(naipe) = (generic)(intptr_t)n;
 	);
+/*
+ * Carta:Desenho - 
+ * Define o valor e naipe da carta como nulos
+ */
 function(Carta, public, nulificar,
 	get(naipe) = (generic)(intptr_t)_NONAIPE;
 	get(valor) = (generic)(intptr_t)_CNONE;

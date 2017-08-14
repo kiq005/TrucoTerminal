@@ -1,15 +1,27 @@
-/* Atributos */
+/*************
+ * Atributos *
+ *************/
 
-/* Classe */
+/**********
+ * Classe *
+ **********/
 extends(J_IA1, Jogador, {});
-/* Construtor */
-// ??? - Esperar verificações
 
-/* Métodos */
+/**************
+ * Construtor *
+ **************/
+
+/***********
+ * Funções *
+ ***********/
+/*
+ * J_IA1:obterCarta - 
+ * A IA decide por uma carta da mão, e retorna ela em um generic Object.
+ */
 function(J_IA1, public, obterCarta, // Override!
 	int selecao, n, v;
 	instanciate(Carta, carta);
-	puts("<< Obtendo carta IA >>");
+	//puts("<< Obtendo carta IA >>");
 	if((int)(intptr_t)(get(cartas))<1){
 		puts("<< IA Não tem cartas!!! >>");
 		return NULL;

@@ -2,7 +2,13 @@
 Estamos simulando o paradigma de Orientação a Objetos em C, através de um jogo de truco para ser rodado via terminal.
 ## Executando
 Utilize o `build.sh` para contruir o jogo. Um arquivo `Truco.sh` será gerado, utilize ele para testar o jogo no terminal!
-(Atualmente, a versão construída é um modelo em Java, que servirá de base para a construção do modelo em C+OO)
+```Bash
+Uso: Truco [OPÇÃO]
+Pequeno jogo de truco para ser jogado via terminal.
+
+	-c, --cpoo		Executa o modelo desenvolvido em C com a biblioteca 'oo.h'.
+	-j, --java		Executa o modelo desenvolvido em Java.
+```
 ## Programação OO via C
 Para simular OO via C, primeiramente inclua a biblioteca _oo.h_, utilizando: `#include "oo.c"`, a biblioteca já inclui _stdlib.h_, _stdio.h_, e _string.h_. Atualmente contamos com as seguintes funcionalidades:
 
@@ -183,6 +189,8 @@ int main(void){
 ```
 
 ## Updates
+13-08-17.2: O arquivo **build.sh** foi refeito, agora ele também compila a versão do jogo implementada em C-POO, e permite a execução dos dois modelos, por passagem de argumentos no momento da execução. Todos os arquivos C foram documentados, permitindo maior entendimento do projeto. Vários problemas na primeira versão da implementação do Truco em C-POO foram resolvidos. Novos problemas encontrados serão listados em _Issues_ e trabalhados para a próxima atualização.
+
 13-08-17: Primeira versão da implementação do jogo de Truco, via C. Não verificamos por erros na implementação, e ela está exatamente como a atual versão do modelo Java. Erros, bugs, e quaisquer problemas serão listados em _Issues_.
 
 12-08-17: Foi verificado a possibilidade de uso de TADs(veja acima como utilizar). Foram removidas as macros **DEF_CLASS**, **CLASS1**, **CLASS2**, **DEF_EXTENDS**, **EXTENDS2**, **EXTENDS3**, pois elas impediam a passagem de listas diretas para as definições de **classes** e **extensões**, o que não altera o código, você pode criar normalmente classes passando apenas dois argumentos(por exemplo, `class(Professor)`) caso ela não possua atributos, o mesmo vale para extensões, porém o código gerará um _warning_ se compilado com as _flags_ **-Wall -Wextra**. Para evitar os avisos, passe uma lista vazia caso a classe não possua atributos (por exemplo, `class(Professor, {})`). Uma mudança significativa foi a modificação do cabeçalho de alguns métodos, e a modificação de diversas chamadas em macros, para permitir que as mensagens de erro geradas exibam também a linha que gerou o erro. Códigos gerados na atualização anterior são compativeis.

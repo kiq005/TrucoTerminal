@@ -1,10 +1,18 @@
 
-/* Atributos */
+/*************
+ * Atributos *
+ *************/
 var(public, Object*, mao);
 var(public, int, cartas);
-/* Classe */
+
+/**********
+ * Classe *
+ **********/
 class(Jogador, {&mao, &cartas});
-/* Construtor */
+
+/**************
+ * Construtor *
+ **************/
 constructor(Jogador,
 	instanciate(Carta, c1, _CNONE, _NONAIPE);
 	instanciate(Carta, c2, _CNONE, _NONAIPE);
@@ -16,7 +24,14 @@ constructor(Jogador,
 	((Object*)get(mao))[1] = *c2;
 	((Object*)get(mao))[2] = *c3;
 	);
-/* Métodos */
+
+/***********
+ * Funções *
+ ***********/
+/*
+ * Jogador:darCarta - 
+ * Recebe um Object* com tipo Carta, e coloca na mão do jogador
+ */
 function(Jogador, public, darCarta,
 	arg(Object*, c);
 	int n, v, num_cartas;
@@ -27,9 +42,17 @@ function(Jogador, public, darCarta,
 	call(&((Object*)get(mao))[num_cartas], setNaipe, n);
 	get(cartas) = (generic)(intptr_t)(((int)(intptr_t)get(cartas))+1);
 	);
+/*
+ * Jogador:esvaziarMao - 
+ * Esvazia a mão do jogador
+ */
 function(Jogador, public, esvaziarMao,
 	get(cartas) = (generic)(intptr_t)0;
 	);
+/*
+ * Jogador:organizaMao - 
+ * Organiza mão do jogador, mantendo as cartas sempre a esquerda
+ */
 function(Jogador, public, organizaMao,
 	//printf("<< Organizando: [%s] [%s] [%s] >>\n", (char*)call(&((Object*)get(mao))[0], Desenho), (char*)call(&((Object*)get(mao))[1], Desenho), (char*)call(&((Object*)get(mao))[2], Desenho));
 	if( (int)(intptr_t)call(&((Object*)get(mao))[0], getValor) == _CNONE){
@@ -71,7 +94,7 @@ function(Jogador, public, organizaMao,
 	else{
 		//puts("<Terceira vazia>");
 	}
-	printf("<< Organizado: [%s] [%s] [%s] >>\n", (char*)call(&((Object*)get(mao))[0], Desenho), (char*)call(&((Object*)get(mao))[1], Desenho), (char*)call(&((Object*)get(mao))[2], Desenho));
+	//printf("<< Organizado: [%s] [%s] [%s] >>\n", (char*)call(&((Object*)get(mao))[0], Desenho), (char*)call(&((Object*)get(mao))[1], Desenho), (char*)call(&((Object*)get(mao))[2], Desenho));
 	);
 function(Jogador, public, obterCarta,
 	fprintf(stderr, "Erro: Função 'obterCarta' não implementada.");

@@ -1,71 +1,118 @@
 #include "oo.h"
-/************************
-* TODO: 
-* - Testar objetos que contenham argumentos de um tipo definido pelo usuário!
-	Ex.: Aluno tem professor (Aluno->Professor), Pessoa tem amigo (Pessoa->Pessoa)
-* - get(valor) = (generic)(intptr_t)v;// <-- Tentar simplificar para evitar warning
-**************************/
 
-/* Definição de atributos */
+/**************************
+ * Definição de atributos *
+ **************************/
 var(public, char[64], nome);
 var(public, int, idade);
 var(public, int, anoFormatura);
-
 var(public, Object, prof);
-/* Definição das classes */
+
+/*************************
+ * Definição das classes *
+ *************************/
 class(Pessoa, {&nome});
 extends(Aluno, Pessoa, {&prof, &idade});
 extends(Professor, Pessoa, {});
 extends(Formado, Aluno, {&anoFormatura});
-/* Definindo inicializadores */
+
+/*****************************
+ * Definindo inicializadores *
+ *****************************/
 constructor(Aluno, 
 	arg(char*, name);
 	arg(int, i);
 	get(nome) = name;
 	get(idade) = (generic)(intptr_t)i;
 	);
-/* Definição das funções */
+
+/*************************
+ * Definição das funções *
+ *************************/
+/*
+ * Pessoa:getName - 
+ * Retorna generic char* com o nome da Pessoa.
+ */
 function(Pessoa, public, getName,
 	return get(nome);
 	);
+/*
+ * Pessoa:setName - 
+ * Recebe um char*, e define o nome da Pessoa.
+ */
 function(Pessoa, public, setName, 
 	arg(char*, name);
 	get(nome) = name;
 	);
+/*
+ * Pessoa:getUndefVar - 
+ * Tenta obter uma variável não definida, gerando um erro.
+ */
 function(Pessoa, public, getUndefVar,
 	return get(undef);
 	);
-
+/*
+ * Aluno:setIdade - 
+ * Recebe um int, e define a idade do Aluno.
+ */
 function(Aluno, public, setIdade, 
 	arg(int, i);
 	get(idade) = (generic)(intptr_t)i;
 	);
+/*
+ * Aluno:getIdade - 
+ * Retorna um generic int com a idade do Aluno.
+ */
 function(Aluno, public, getIdade,
 	return get(idade);
 	);
+/*
+ * Aluno:getName - 
+ * Retorna um generic char* com o nome do Aluno.
+ */
 function(Aluno, public, getName, 
 	return get(nome);
 	);
+/*
+ * Aluno:setProf - 
+ * Recebe um Object*, e define o Professor do Aluno.
+ */
 function(Aluno, public, setProf,
 	arg(Object*, p);
 	get(prof) = p;
 	);
+/*
+ * Aluno:getProf - 
+ * Retorna um generic Object* com o Professor do Aluno.
+ */
 function(Aluno, public, getProf, 
 	return get(prof);
 	);
-
-
+/*
+ * Formado:setAnoFormatura - 
+ * Recebe um int, e define o ano de formatura do aluno Formado.
+ */
 function(Formado, public, setAnoFormatura, 
 	arg(int, i);
 	get(anoFormatura)= (generic)(intptr_t)i;
 	);
+/*
+ * Formado:getAnoFormatura - 
+ * Retorna um generic int com o ano de formatura do aluno Formado.
+ */
 function(Formado, public, getAnoFormatura, 
 	return get(anoFormatura);
 	);
-function(Formado, public, getName, 
+/*
+ * Formado:getName - 
+ * Retorna um generic char* com o "Veterano".
+ */
+function(Formado, public, getName, // 
 	return "Veterano";
 	);
-
+/**********************
+ * Início do programa *
+ **********************/
 int main(void){
 	// Instaciações
 	puts(">> Criando instâncias");
@@ -143,7 +190,7 @@ int main(void){
 	call(aluno1, setProf, prof);
 	printf("%s é aluno de %s.\n", (char*)call(aluno1, getName), (char*)call((Object*)(call(aluno1, getProf)), getName));
 
-	/* Teste de desalocação */
+	/* Teste de desalocação, pode gerar erro ao tentar acessar variável desalocada*/
 	puts(">> Desalocando aluno1");
 	delete(aluno1);
 	call(aluno1, setName, "Ana");
