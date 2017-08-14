@@ -22,8 +22,12 @@ extends(Formado, Aluno, {&anoFormatura});
 constructor(Aluno, 
 	arg(char*, name);
 	arg(int, i);
+	puts("Novo aluno!");
 	get(nome) = name;
 	get(idade) = (generic)(intptr_t)i;
+	);
+constructor(Pessoa, 
+	puts("Nova pessoa!");
 	);
 
 /*************************

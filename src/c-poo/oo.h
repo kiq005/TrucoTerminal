@@ -93,6 +93,8 @@ static Object _scope_;
  * Utilizada para liberar espaço em memória alocado por objetos
  */
 #define delete(_obj_)\
+	/* Chama o método de descontrução*/\
+	__realize_call__(_obj_, __LINE__, __FILE__, "__destructor__");\
 	for(__i__=0; __i__<__MAX_MET__; __i__++){\
 		free(_obj_->attributes[__i__]);\
 	}\
@@ -137,6 +139,12 @@ static Object _scope_;
  */
 #define constructor(_class_, ...) \
 	function(_class_, protected, __init__, __VA_ARGS__);
+
+/* Macro: constructor - 
+ * Define o construtor de uma classe
+ */
+#define destructor(_class_, ...) \
+	function(_class_, protected, __destructor__, __VA_ARGS__);
 
 /* Macro: arg - 
  * Obtém argumentos passados para funções definidas pela macro function
@@ -231,7 +239,7 @@ static generic __find_method_on_object__(Object _obj_, int _callLine_, char* _ca
 		}
 	}// Se não encontra o método na classe filha, procura na super
 	/*printf("Procurando na super de %s\n", _obj_._type->_name);*/
-	if(strcmp(func, "__init__")==0 || strcmp(_obj_._type->_super->_name, "__OBJECT__")!=0){
+	if(strcmp(func, "__init__")==0 || strcmp(func, "__destructor__")==0 || strcmp(_obj_._type->_super->_name, "__OBJECT__")!=0){
 		// Criamos uma instância da super
 		Object* super = (Object*)malloc(sizeof(Object));
 		super->_type = _obj_._type->_super;
@@ -281,10 +289,19 @@ static generic __realize_call__(Object *_obj, int _callLine_, char* _callFile_, 
  *************************/
 /*
  * __init__f - 
- * Não recebe argumentos. É o inicializador padrão de classes.
+ * Não recebe argumentos. É o inicializador padrão de classes, chamado na 
+ * macro 'instanciate'.
  */
 static generic __init__f (void){return NULL;};
+/*
+ * __delete__f - 
+ * Não recebe argumentos. É o desconstrutor padrão de classes, chamado na
+ * macro 'delete'.
+ */
+static generic __destructor__f (void){return NULL;};
 /* __init__ - Estrutura que define o método padrão de inicialização */
 static Method __init__ = {protected, "__init__", &__init__f};
+/* __init__ - Estrutura que define o método padrão de desconstrução */
+static Method __destructor__ = {public, "__destructor__", &__destructor__f};
 /* __OBJECT__ - Estrutura ao qual toda classe herda, para permitir uso de inicializador */
-static Class __OBJECT__ = {NULL, "__OBJECT__", {&__init__}, {}};
+static Class __OBJECT__ = {NULL, "__OBJECT__", {&__init__, &__destructor__}, {}};

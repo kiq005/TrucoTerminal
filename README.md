@@ -63,11 +63,27 @@ constructor(Aluno,
     arg(int, i);
     get(nome) = name;
     get(idade) = (generic)(intptr_t)i;
+    );
 ```
+O construtor é chamado no momento da instanciação(uso da `instanciate(class, nome)`) da Classe.
+
+- **Desconstrução**
+
+A definição de um desconstrutor segue o mesmo modelo que a do construtor e de funções. Utilize `destructor(Classe, comandos...)`, por exemplo:
+```C
+destructor(Aluno, 
+    free(get(name));// Caso você tenha utilizado malloc no atributo
+    );
+```
+O destrutor da classe é chamado no momento da remoção do objeto (uso do `delete(obj)`).
 
 - **Instânciação**
 
 Para criar uma instância de uma classe, utilize `instanciate(classe, nome);`, não é preciso ter inicializado a variável antes. Caso a instância receba parâmetros de inicialização, você pode passa-los normalmente pela mesma macro, utilize `instanciate(classe, nome, arg1, arg2, ...)`.
+
+- **Remoção**
+
+Quando terminar de utilizar um objeto, você pode liberar o espaço alocado por ele utilizando `delete(obj)`. A tentativa de acesso a objetos que foram removidos pode causar falha de segmentação.
 
 - **Chamada de métodos**
 
@@ -189,6 +205,8 @@ int main(void){
 ```
 
 ## Updates
+13-08-17.3: Atualização focada na solução do problema de desconstrutor. Foram definidos os recursos necessários para desconstrução de objetos, permitindo que o programador defina um desconstrutor para ser chamado quando utiliza-se a macro `delete` sobre um objeto.
+
 13-08-17.2: O arquivo **build.sh** foi refeito, agora ele também compila a versão do jogo implementada em C-POO, e permite a execução dos dois modelos, por passagem de argumentos no momento da execução. Todos os arquivos C foram documentados, permitindo maior entendimento do projeto. Vários problemas na primeira versão da implementação do Truco em C-POO foram resolvidos. Novos problemas encontrados serão listados em _Issues_ e trabalhados para a próxima atualização.
 
 13-08-17: Primeira versão da implementação do jogo de Truco, via C. Não verificamos por erros na implementação, e ela está exatamente como a atual versão do modelo Java. Erros, bugs, e quaisquer problemas serão listados em _Issues_.
